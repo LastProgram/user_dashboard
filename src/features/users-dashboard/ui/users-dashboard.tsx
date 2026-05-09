@@ -141,6 +141,22 @@ function DashboardEmptyState({ onReload }: { onReload: () => void }) {
   )
 }
 
+function DashboardQueryEmptyState({ onReset }: { onReset: () => void }) {
+  return (
+    <EmptyState
+      title="No matching profiles"
+      description="No profiles match the current search or filters. Clear the filters to return to the full directory."
+      icon={<SearchX className="size-7" aria-hidden="true" />}
+      action={
+        <Button variant="secondary" onClick={onReset}>
+          <RefreshCcw className="size-4" aria-hidden="true" />
+          Reset filters
+        </Button>
+      }
+    />
+  )
+}
+
 function DashboardReadyState({
   allUsers,
   dashboardPage,
@@ -186,9 +202,15 @@ function DashboardReadyState({
         />
       )}
 
-      {dashboardPage.totalUsers === 0 ? (
+      {dashboardPage.totalUsers === 0 && (
         <DashboardEmptyState onReload={onReload} />
-      ) : (
+      )}
+
+      {dashboardPage.totalUsers > 0 && dashboardPage.visibleUsers === 0 && (
+        <DashboardQueryEmptyState onReset={onResetQuery} />
+      )}
+
+      {dashboardPage.visibleUsers > 0 && (
         <>
           <UsersTable users={dashboardPage.users} />
           <UserCardList users={dashboardPage.users} />
