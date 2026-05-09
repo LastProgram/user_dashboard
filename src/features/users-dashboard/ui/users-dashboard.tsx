@@ -1,7 +1,7 @@
 'use client'
 
 import type { User } from '@/entities/user/model/user.types'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
@@ -10,11 +10,13 @@ import {
   getDashboardDepartmentOptions,
 } from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import { buildUsersCsv } from '@/features/users-dashboard/lib/build-users-csv'
 import {
   buildDashboardQueryUrl,
   mergeDashboardQuery,
   parseDashboardQueryFromUrl,
 } from '@/features/users-dashboard/lib/dashboard-query-url'
+import { downloadUsersCsv } from '@/features/users-dashboard/lib/download-users-csv'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import type {
   DashboardPage,
@@ -26,6 +28,7 @@ import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summar
 import { DashboardPagination } from '@/features/users-dashboard/ui/dashboard-pagination'
 import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
+import { UserDetailsDrawer } from '@/features/users-dashboard/ui/user-details-drawer'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -163,24 +166,28 @@ function DashboardReadyState({
   dashboardQuery,
   departmentOptions,
   onDepartmentChange,
+  onExportUsers,
   onPageChange,
   onReload,
   onResetQuery,
   onRoleChange,
   onSearchChange,
   onSortChange,
+  onViewDetails,
 }: {
   allUsers: User[]
   dashboardPage: DashboardPage
   dashboardQuery: DashboardQuery
   departmentOptions: string[]
   onDepartmentChange: (value: string) => void
+  onExportUsers: () => void
   onPageChange: (page: number) => void
   onReload: () => void
   onResetQuery: () => void
   onRoleChange: (value: DashboardRoleFilter) => void
   onSearchChange: (value: string) => void
   onSortChange: (value: UsersSort) => void
+  onViewDetails: (userId: number) => void
 }) {
   const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
 
@@ -194,6 +201,8 @@ function DashboardReadyState({
           departmentOptions={departmentOptions}
           totalUsers={dashboardPage.totalUsers}
           visibleUsers={dashboardPage.visibleUsers}
+          canExport={dashboardPage.visibleUsers > 0}
+          onExport={onExportUsers}
           onSearchChange={onSearchChange}
           onRoleChange={onRoleChange}
           onDepartmentChange={onDepartmentChange}
@@ -212,8 +221,14 @@ function DashboardReadyState({
 
       {dashboardPage.visibleUsers > 0 && (
         <>
-          <UsersTable users={dashboardPage.users} />
-          <UserCardList users={dashboardPage.users} />
+          <UsersTable
+            users={dashboardPage.users}
+            onViewDetails={onViewDetails}
+          />
+          <UserCardList
+            users={dashboardPage.users}
+            onViewDetails={onViewDetails}
+          />
           <DashboardPagination
             dashboardPage={dashboardPage}
             onPageChange={onPageChange}
@@ -229,6 +244,7 @@ export function UsersDashboard() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 
   const dashboardQuery = useMemo(
     () => parseDashboardQueryFromUrl(searchParams),
@@ -259,6 +275,20 @@ export function UsersDashboard() {
     router.replace(pathname, { scroll: false })
   }, [pathname, router])
 
+  const closeUserDetails = useCallback(() => {
+    setSelectedUserId(null)
+  }, [])
+
+  const exportVisibleUsers = useCallback(() => {
+    if (dashboardPage.filteredUsers.length === 0) {
+      return
+    }
+
+    const csv = buildUsersCsv(dashboardPage.filteredUsers)
+
+    downloadUsersCsv(csv, 'users-dashboard-profiles.csv')
+  }, [dashboardPage.filteredUsers])
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
       <section className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -284,13 +314,21 @@ export function UsersDashboard() {
             onDepartmentChange={(department) =>
               updateDashboardQuery({ department })
             }
+            onExportUsers={exportVisibleUsers}
             onPageChange={(page) => updateDashboardQuery({ page })}
             onSortChange={(sort) => updateDashboardQuery({ sort })}
             onResetQuery={resetDashboardQuery}
             onReload={reload}
+            onViewDetails={setSelectedUserId}
           />
         )}
       </section>
+
+      <UserDetailsDrawer
+        userId={selectedUserId}
+        isOpen={selectedUserId !== null}
+        onClose={closeUserDetails}
+      />
     </main>
   )
 }

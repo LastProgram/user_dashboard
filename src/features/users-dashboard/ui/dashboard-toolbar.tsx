@@ -1,4 +1,4 @@
-import { RotateCcw, Search } from 'lucide-react'
+import { Download, RotateCcw, Search } from 'lucide-react'
 
 import type {
   DashboardQuery,
@@ -15,7 +15,9 @@ interface DashboardToolbarProps {
   departmentOptions: string[]
   totalUsers: number
   visibleUsers: number
+  canExport?: boolean
   disabled?: boolean
+  onExport?: () => void
   onSearchChange?: (value: string) => void
   onRoleChange?: (value: DashboardRoleFilter) => void
   onDepartmentChange?: (value: string) => void
@@ -60,7 +62,9 @@ export function DashboardToolbar({
   departmentOptions,
   totalUsers,
   visibleUsers,
+  canExport = false,
   disabled = false,
+  onExport,
   onSearchChange,
   onRoleChange,
   onDepartmentChange,
@@ -68,6 +72,7 @@ export function DashboardToolbar({
   onReset,
 }: DashboardToolbarProps) {
   const isResetDisabled = disabled || !hasActiveQuery(query)
+  const isExportDisabled = disabled || !canExport || !onExport
 
   return (
     <section
@@ -150,15 +155,27 @@ export function DashboardToolbar({
           ))}
         </Select>
 
-        <Button
-          variant="secondary"
-          onClick={onReset}
-          disabled={isResetDisabled}
-          className={cn('lg:min-w-28', disabled && 'opacity-60')}
-        >
-          <RotateCcw className="size-4" aria-hidden="true" />
-          Reset
-        </Button>
+        <div className="grid grid-cols-2 gap-2 lg:flex">
+          <Button
+            variant="secondary"
+            onClick={onReset}
+            disabled={isResetDisabled}
+            className={cn('lg:min-w-28', disabled && 'opacity-60')}
+          >
+            <RotateCcw className="size-4" aria-hidden="true" />
+            Reset
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={onExport}
+            disabled={isExportDisabled}
+            className="lg:min-w-32"
+          >
+            <Download className="size-4" aria-hidden="true" />
+            Export CSV
+          </Button>
+        </div>
       </div>
     </section>
   )

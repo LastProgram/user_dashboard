@@ -1,8 +1,10 @@
 import type { User } from '@/entities/user/model/user.types'
 import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 
 interface UsersTableProps {
   users: User[]
+  onViewDetails: (userId: number) => void
 }
 
 const NOT_PROVIDED = 'Not provided'
@@ -47,7 +49,7 @@ function UserAvatar({ user }: { user: User }) {
   )
 }
 
-export function UsersTable({ users }: UsersTableProps) {
+export function UsersTable({ users, onViewDetails }: UsersTableProps) {
   return (
     <section
       aria-labelledby="users-table-title"
@@ -70,7 +72,7 @@ export function UsersTable({ users }: UsersTableProps) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] border-collapse">
+        <table className="w-full min-w-[1080px] border-collapse">
           <thead>
             <tr className="border-b border-slate-800 text-left text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
               <th scope="col" className="px-6 py-4">
@@ -93,6 +95,9 @@ export function UsersTable({ users }: UsersTableProps) {
               </th>
               <th scope="col" className="px-6 py-4">
                 Location
+              </th>
+              <th scope="col" className="px-6 py-4">
+                Actions
               </th>
             </tr>
           </thead>
@@ -148,6 +153,16 @@ export function UsersTable({ users }: UsersTableProps) {
                   <p className="text-xs text-slate-500">
                     {formatNullableText(user.university)}
                   </p>
+                </td>
+
+                <td className="px-6 py-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onViewDetails(user.id)}
+                  >
+                    View details
+                  </Button>
                 </td>
               </tr>
             ))}
