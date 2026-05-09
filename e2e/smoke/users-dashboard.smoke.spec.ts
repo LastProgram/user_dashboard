@@ -52,10 +52,16 @@ const usersResponse = {
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/users**', async (route) => {
+    const requestUrl = new URL(route.request().url())
+    const userId = requestUrl.pathname.match(/^\/users\/(\d+)$/)?.[1]
+    const responseBody = userId
+      ? usersResponse.users.find((user) => user.id === Number(userId))
+      : usersResponse
+
     await route.fulfill({
-      status: 200,
+      status: responseBody ? 200 : 404,
       contentType: 'application/json',
-      body: JSON.stringify(usersResponse),
+      body: JSON.stringify(responseBody ?? { message: 'User not found' }),
     })
   })
 })
@@ -85,5 +91,20 @@ test('filters users by search query', async ({ page }) => {
   await expect(page.getByText('Showing 1 of 2 profiles')).toBeVisible()
   await expect(
     page.getByRole('table').getByText('Alice Morgan'),
+  ).toBeVisible()
+})
+
+test('opens user details from the users table', async ({ page }) => {
+  await page.goto('/')
+
+  await page
+    .getByRole('row', { name: /Jane Cooper/ })
+    .getByRole('button', { name: /view details/i })
+    .click()
+
+  await expect(
+    page
+      .getByRole('dialog', { name: 'User profile' })
+      .getByRole('heading', { name: 'Jane Cooper' }),
   ).toBeVisible()
 })
