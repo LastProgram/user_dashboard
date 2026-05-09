@@ -74,3 +74,16 @@ test('opens the users dashboard route', async ({ page }) => {
     page.getByRole('table').getByText('Jane Cooper'),
   ).toBeVisible()
 })
+
+test('filters users by search query', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.getByText('Showing 2 of 2 profiles')).toBeVisible()
+
+  await page.getByRole('textbox', { name: /search users/i }).fill('Alice')
+
+  await expect(page.getByText('Showing 1 of 2 profiles')).toBeVisible()
+  await expect(
+    page.getByRole('table').getByText('Alice Morgan'),
+  ).toBeVisible()
+})
