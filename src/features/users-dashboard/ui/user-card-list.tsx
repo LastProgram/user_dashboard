@@ -1,8 +1,15 @@
 import type { User } from '@/entities/user/model/user.types'
 import { Badge } from '@/shared/ui/badge'
+import { Button } from '@/shared/ui/button'
 
 interface UserCardListProps {
   users: User[]
+  onViewDetails: (userId: number) => void
+}
+
+interface UserCardProps {
+  user: User
+  onViewDetails: (userId: number) => void
 }
 
 const NOT_PROVIDED = 'Not provided'
@@ -43,7 +50,7 @@ function UserAvatar({ user }: { user: User }) {
   )
 }
 
-function UserCard({ user }: { user: User }) {
+function UserCard({ user, onViewDetails }: UserCardProps) {
   return (
     <article className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/20 transition-colors hover:border-cyan-400/40">
       <div className="flex items-start gap-4">
@@ -74,13 +81,21 @@ function UserCard({ user }: { user: User }) {
             <span aria-hidden="true">•</span>
             <span>{formatLocation(user)}</span>
           </div>
+
+          <Button
+            variant="ghost"
+            className="mt-4 w-full"
+            onClick={() => onViewDetails(user.id)}
+          >
+            View details
+          </Button>
         </div>
       </div>
     </article>
   )
 }
 
-export function UserCardList({ users }: UserCardListProps) {
+export function UserCardList({ users, onViewDetails }: UserCardListProps) {
   return (
     <section
       aria-labelledby="users-card-list-title"
@@ -100,7 +115,11 @@ export function UserCardList({ users }: UserCardListProps) {
 
       <div className="space-y-4">
         {users.map((user) => (
-          <UserCard key={user.id} user={user} />
+          <UserCard
+            key={user.id}
+            user={user}
+            onViewDetails={onViewDetails}
+          />
         ))}
       </div>
     </section>

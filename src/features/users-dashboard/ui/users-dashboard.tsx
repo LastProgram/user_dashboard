@@ -1,7 +1,7 @@
 'use client'
 
 import type { User } from '@/entities/user/model/user.types'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
@@ -26,6 +26,7 @@ import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summar
 import { DashboardPagination } from '@/features/users-dashboard/ui/dashboard-pagination'
 import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
+import { UserDetailsDrawer } from '@/features/users-dashboard/ui/user-details-drawer'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -169,6 +170,7 @@ function DashboardReadyState({
   onRoleChange,
   onSearchChange,
   onSortChange,
+  onViewDetails,
 }: {
   allUsers: User[]
   dashboardPage: DashboardPage
@@ -181,6 +183,7 @@ function DashboardReadyState({
   onRoleChange: (value: DashboardRoleFilter) => void
   onSearchChange: (value: string) => void
   onSortChange: (value: UsersSort) => void
+  onViewDetails: (userId: number) => void
 }) {
   const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
 
@@ -212,8 +215,14 @@ function DashboardReadyState({
 
       {dashboardPage.visibleUsers > 0 && (
         <>
-          <UsersTable users={dashboardPage.users} />
-          <UserCardList users={dashboardPage.users} />
+          <UsersTable
+            users={dashboardPage.users}
+            onViewDetails={onViewDetails}
+          />
+          <UserCardList
+            users={dashboardPage.users}
+            onViewDetails={onViewDetails}
+          />
           <DashboardPagination
             dashboardPage={dashboardPage}
             onPageChange={onPageChange}
@@ -229,6 +238,7 @@ export function UsersDashboard() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
 
   const dashboardQuery = useMemo(
     () => parseDashboardQueryFromUrl(searchParams),
@@ -259,6 +269,10 @@ export function UsersDashboard() {
     router.replace(pathname, { scroll: false })
   }, [pathname, router])
 
+  const closeUserDetails = useCallback(() => {
+    setSelectedUserId(null)
+  }, [])
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
       <section className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -288,9 +302,16 @@ export function UsersDashboard() {
             onSortChange={(sort) => updateDashboardQuery({ sort })}
             onResetQuery={resetDashboardQuery}
             onReload={reload}
+            onViewDetails={setSelectedUserId}
           />
         )}
       </section>
+
+      <UserDetailsDrawer
+        userId={selectedUserId}
+        isOpen={selectedUserId !== null}
+        onClose={closeUserDetails}
+      />
     </main>
   )
 }
