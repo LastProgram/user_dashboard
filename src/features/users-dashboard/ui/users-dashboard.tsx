@@ -6,6 +6,7 @@ import { AlertTriangle, RefreshCcw } from 'lucide-react'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
+import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -104,17 +105,19 @@ function DashboardErrorState({
 
 function DashboardReadyState({
   summary,
+  users,
 }: {
   summary: ReturnType<typeof buildDashboardSummary>
+  users: ReturnType<typeof useUsersDashboard>['users']
 }) {
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
+      <UsersTable users={users} />
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20 md:hidden">
         <p className="text-sm leading-6 text-slate-400">
-          Desktop table, mobile cards, and empty state will be connected in the
-          next dashboard-core commits.
+          Mobile user cards will be connected in the next dashboard-core commit.
         </p>
       </section>
     </div>
@@ -140,7 +143,7 @@ export function UsersDashboard() {
           />
         )}
 
-        {!isLoading && !isError && <DashboardReadyState summary={summary} />}
+        {!isLoading && !isError && <DashboardReadyState summary={summary} users={users} />}
 
         {!isLoading && !isError && users.length === 0 && (
           <div className="flex justify-end">
