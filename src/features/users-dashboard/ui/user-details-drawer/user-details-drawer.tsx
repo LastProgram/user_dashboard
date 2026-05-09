@@ -1,12 +1,12 @@
 'use client'
 
 import { useUserDetails } from '@/features/users-dashboard/api/use-user-details'
-import { UserDetailsContent } from '@/features/users-dashboard/ui/user-details-content'
-import { UserDetailsDrawerShell } from '@/features/users-dashboard/ui/user-details-drawer-shell'
+import { UserDetailsContent } from './user-details-content'
+import { UserDetailsDrawerShell } from './user-details-drawer-shell'
 import {
   UserDetailsErrorState,
   UserDetailsLoadingState,
-} from '@/features/users-dashboard/ui/user-details-drawer-states'
+} from './user-details-drawer-states'
 
 interface UserDetailsDrawerProps {
   userId: number | null

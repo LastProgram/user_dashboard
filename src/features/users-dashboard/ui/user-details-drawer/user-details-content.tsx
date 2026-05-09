@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 
 import type { User } from '@/entities/user/model/user.types'
+import { UserAvatar } from '@/features/users-dashboard/ui/user-avatar'
 import { Badge } from '@/shared/ui/badge'
 
 import {
@@ -27,42 +28,12 @@ function formatOptionalText(value: string | null | undefined) {
   return trimmedValue || NOT_PROVIDED
 }
 
-function getInitials(fullName: string) {
-  return fullName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((namePart) => namePart[0]?.toUpperCase())
-    .join('')
-}
-
-function UserDetailsAvatar({ user }: { user: User }) {
-  const initials = getInitials(user.fullName)
-
-  return (
-    <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-slate-700 bg-slate-800 text-lg font-semibold text-cyan-200">
-      {user.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.image}
-          alt=""
-          className="size-full object-cover"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
-      ) : (
-        <span aria-hidden="true">{initials || 'U'}</span>
-      )}
-    </div>
-  )
-}
-
 export function UserDetailsContent({ user }: UserDetailsContentProps) {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
         <div className="flex items-start gap-4">
-          <UserDetailsAvatar user={user} />
+          <UserAvatar user={user} size="lg" />
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">

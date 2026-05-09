@@ -1,4 +1,5 @@
 import type { User } from '@/entities/user/model/user.types'
+import { UserAvatar } from '@/features/users-dashboard/ui/user-avatar'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 
@@ -9,15 +10,6 @@ interface UsersTableProps {
 
 const NOT_PROVIDED = 'Not provided'
 
-function getInitials(fullName: string) {
-  return fullName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((namePart) => namePart[0]?.toUpperCase())
-    .join('')
-}
-
 function formatNullableText(value: string | null) {
   return value ?? NOT_PROVIDED
 }
@@ -26,27 +18,6 @@ function formatLocation(user: User) {
   const locationParts = [user.city, user.country].filter(Boolean)
 
   return locationParts.length > 0 ? locationParts.join(', ') : NOT_PROVIDED
-}
-
-function UserAvatar({ user }: { user: User }) {
-  const initials = getInitials(user.fullName)
-
-  return (
-    <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 text-sm font-semibold text-cyan-200">
-      {user.image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.image}
-          alt=""
-          className="size-full object-cover"
-          loading="lazy"
-          referrerPolicy="no-referrer"
-        />
-      ) : (
-        <span aria-hidden="true">{initials || 'U'}</span>
-      )}
-    </div>
-  )
 }
 
 export function UsersTable({ users, onViewDetails }: UsersTableProps) {
@@ -110,7 +81,7 @@ export function UsersTable({ users, onViewDetails }: UsersTableProps) {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <UserAvatar user={user} />
+                    <UserAvatar user={user} size="sm" />
 
                     <div className="min-w-0">
                       <p className="truncate font-medium text-slate-50">
