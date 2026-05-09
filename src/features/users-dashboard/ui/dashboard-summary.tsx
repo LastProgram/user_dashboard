@@ -16,7 +16,6 @@ interface SummaryMetricCardProps {
   value: string | number
   description: string
   icon: ReactNode
-  highlighted?: boolean
   children?: ReactNode
 }
 
@@ -31,16 +30,13 @@ function SummaryMetricCard({
   value,
   description,
   icon,
-  highlighted = false,
   children,
 }: SummaryMetricCardProps) {
   return (
     <article
       className={cn(
         'rounded-2xl border bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20 transition-colors',
-        highlighted
-          ? 'border-cyan-400/50 shadow-cyan-950/20'
-          : 'border-slate-800',
+        'border-slate-800',
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -55,9 +51,7 @@ function SummaryMetricCard({
         <div
           className={cn(
             'flex size-12 shrink-0 items-center justify-center rounded-2xl border',
-            highlighted
-              ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200'
-              : 'border-slate-700 bg-slate-800 text-slate-300',
+            'border-slate-700 bg-slate-800 text-slate-300',
           )}
           aria-hidden="true"
         >
@@ -99,7 +93,6 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
           value={summary.totalUsers}
           description="All profiles currently available in the dashboard."
           icon={<Users className="size-6" />}
-          highlighted
         />
 
         <SummaryMetricCard
