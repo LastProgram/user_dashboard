@@ -10,11 +10,13 @@ import {
   getDashboardDepartmentOptions,
 } from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import { buildUsersCsv } from '@/features/users-dashboard/lib/build-users-csv'
 import {
   buildDashboardQueryUrl,
   mergeDashboardQuery,
   parseDashboardQueryFromUrl,
 } from '@/features/users-dashboard/lib/dashboard-query-url'
+import { downloadUsersCsv } from '@/features/users-dashboard/lib/download-users-csv'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import type {
   DashboardPage,
@@ -164,6 +166,7 @@ function DashboardReadyState({
   dashboardQuery,
   departmentOptions,
   onDepartmentChange,
+  onExportUsers,
   onPageChange,
   onReload,
   onResetQuery,
@@ -177,6 +180,7 @@ function DashboardReadyState({
   dashboardQuery: DashboardQuery
   departmentOptions: string[]
   onDepartmentChange: (value: string) => void
+  onExportUsers: () => void
   onPageChange: (page: number) => void
   onReload: () => void
   onResetQuery: () => void
@@ -197,6 +201,8 @@ function DashboardReadyState({
           departmentOptions={departmentOptions}
           totalUsers={dashboardPage.totalUsers}
           visibleUsers={dashboardPage.visibleUsers}
+          canExport={dashboardPage.visibleUsers > 0}
+          onExport={onExportUsers}
           onSearchChange={onSearchChange}
           onRoleChange={onRoleChange}
           onDepartmentChange={onDepartmentChange}
@@ -273,6 +279,16 @@ export function UsersDashboard() {
     setSelectedUserId(null)
   }, [])
 
+  const exportVisibleUsers = useCallback(() => {
+    if (dashboardPage.filteredUsers.length === 0) {
+      return
+    }
+
+    const csv = buildUsersCsv(dashboardPage.filteredUsers)
+
+    downloadUsersCsv(csv, 'users-dashboard-profiles.csv')
+  }, [dashboardPage.filteredUsers])
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
       <section className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -298,6 +314,7 @@ export function UsersDashboard() {
             onDepartmentChange={(department) =>
               updateDashboardQuery({ department })
             }
+            onExportUsers={exportVisibleUsers}
             onPageChange={(page) => updateDashboardQuery({ page })}
             onSortChange={(sort) => updateDashboardQuery({ sort })}
             onResetQuery={resetDashboardQuery}
