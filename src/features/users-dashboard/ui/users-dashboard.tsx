@@ -5,12 +5,16 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
-import { applyDashboardQuery } from '@/features/users-dashboard/lib/apply-dashboard-query'
+import {
+  applyDashboardQuery,
+  getDashboardDepartmentOptions,
+} from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
 import { parseDashboardQueryFromUrl } from '@/features/users-dashboard/lib/dashboard-query-url'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import type { DashboardPage } from '@/features/users-dashboard/model/dashboard.types'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
+import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
@@ -130,10 +134,14 @@ function DashboardEmptyState({ onReload }: { onReload: () => void }) {
 function DashboardReadyState({
   allUsers,
   dashboardPage,
+  dashboardQuery,
+  departmentOptions,
   onReload,
 }: {
   allUsers: User[]
   dashboardPage: DashboardPage
+  dashboardQuery: ReturnType<typeof parseDashboardQueryFromUrl>
+  departmentOptions: string[]
   onReload: () => void
 }) {
   const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
@@ -141,6 +149,16 @@ function DashboardReadyState({
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
+
+      {dashboardPage.totalUsers > 0 && (
+        <DashboardToolbar
+          query={dashboardQuery}
+          departmentOptions={departmentOptions}
+          totalUsers={dashboardPage.totalUsers}
+          visibleUsers={dashboardPage.visibleUsers}
+          disabled
+        />
+      )}
 
       {dashboardPage.totalUsers === 0 ? (
         <DashboardEmptyState onReload={onReload} />
@@ -168,6 +186,11 @@ export function UsersDashboard() {
     [users, dashboardQuery],
   )
 
+  const departmentOptions = useMemo(
+    () => getDashboardDepartmentOptions(users),
+    [users],
+  )
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
       <section className="mx-auto flex max-w-7xl flex-col gap-8">
@@ -186,6 +209,8 @@ export function UsersDashboard() {
           <DashboardReadyState
             allUsers={users}
             dashboardPage={dashboardPage}
+            dashboardQuery={dashboardQuery}
+            departmentOptions={departmentOptions}
             onReload={reload}
           />
         )}
