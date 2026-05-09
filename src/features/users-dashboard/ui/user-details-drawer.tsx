@@ -1,10 +1,10 @@
 'use client'
 
 import { useUserDetails } from '@/features/users-dashboard/api/use-user-details'
+import { UserDetailsContent } from '@/features/users-dashboard/ui/user-details-content'
 import { UserDetailsDrawerShell } from '@/features/users-dashboard/ui/user-details-drawer-shell'
 import {
   UserDetailsErrorState,
-  UserDetailsLoadedState,
   UserDetailsLoadingState,
 } from '@/features/users-dashboard/ui/user-details-drawer-states'
 
@@ -38,7 +38,7 @@ export function UserDetailsDrawer({
         />
       )}
 
-      {user && <UserDetailsLoadedState user={user} />}
+      {user && <UserDetailsContent user={user} />}
     </UserDetailsDrawerShell>
   )
 }
