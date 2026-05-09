@@ -89,7 +89,7 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
         </div>
 
         <p className="max-w-xl text-sm leading-6 text-slate-400">
-          Metrics are calculated from the normalized safe user model.
+          Overview of the currently displayed users.
         </p>
       </div>
 

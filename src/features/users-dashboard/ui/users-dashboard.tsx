@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
-import { AlertTriangle, RefreshCcw } from 'lucide-react'
-
 import type { User } from '@/entities/user/model/user.types'
+import { useMemo } from 'react'
+import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
+
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
@@ -11,6 +11,7 @@ import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
+import { EmptyState } from '@/shared/ui/empty-state'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Skeleton } from '@/shared/ui/skeleton'
 
@@ -22,7 +23,7 @@ function DashboardHeader() {
     <header className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-2xl shadow-slate-950/30 sm:p-8">
       <div className="flex max-w-3xl flex-col gap-4">
         <p className="text-sm font-medium uppercase tracking-[0.28em] text-cyan-300">
-          Normalized user data
+          User directory
         </p>
 
         <div className="space-y-3">
@@ -31,14 +32,14 @@ function DashboardHeader() {
           </h1>
 
           <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Public dataset, safe boundary, ready for summary cards and filters.
+            Browse a clean public user dataset with summary insights and responsive views.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 pt-2">
-          <Badge variant="default">Safe boundary</Badge>
-          <Badge variant="neutral">Public data</Badge>
-          <Badge variant="neutral">Normalized</Badge>
+          <Badge variant="default">Public dataset</Badge>
+          <Badge variant="neutral">Clean profiles</Badge>
+          <Badge variant="neutral">Responsive views</Badge>
         </div>
       </div>
     </header>
@@ -105,18 +106,43 @@ function DashboardErrorState({
   )
 }
 
+function DashboardEmptyState({ onReload }: { onReload: () => void }) {
+  return (
+    <EmptyState
+      title="No users available"
+      description="The request completed successfully, but the normalized dataset did not include any users. Reload the dataset to try again."
+      icon={<SearchX className="size-7" aria-hidden="true" />}
+      action={
+        <Button variant="secondary" onClick={onReload}>
+          <RefreshCcw className="size-4" aria-hidden="true" />
+          Reload users
+        </Button>
+      }
+    />
+  )
+}
+
 function DashboardReadyState({
   summary,
   users,
+  onReload,
 }: {
   summary: ReturnType<typeof buildDashboardSummary>
   users: User[]
+  onReload: () => void
 }) {
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
-      <UsersTable users={users} />
-      <UserCardList users={users} />
+
+      {users.length === 0 ? (
+        <DashboardEmptyState onReload={onReload} />
+      ) : (
+        <>
+          <UsersTable users={users} />
+          <UserCardList users={users} />
+        </>
+      )}
     </div>
   )
 }
@@ -140,15 +166,12 @@ export function UsersDashboard() {
           />
         )}
 
-        {!isLoading && !isError && <DashboardReadyState summary={summary} users={users} />}
-
-        {!isLoading && !isError && users.length === 0 && (
-          <div className="flex justify-end">
-            <Button variant="secondary" onClick={reload}>
-              <RefreshCcw className="size-4" aria-hidden="true" />
-              Reload users
-            </Button>
-          </div>
+        {!isLoading && !isError && (
+          <DashboardReadyState
+            summary={summary}
+            users={users}
+            onReload={reload}
+          />
         )}
       </section>
     </main>
