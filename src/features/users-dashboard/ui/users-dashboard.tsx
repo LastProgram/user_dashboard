@@ -1,12 +1,30 @@
 'use client'
 
 import type { User } from '@/entities/user/model/user.types'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
+import {
+  applyDashboardQuery,
+  getDashboardDepartmentOptions,
+} from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import {
+  buildDashboardQueryUrl,
+  mergeDashboardQuery,
+  parseDashboardQueryFromUrl,
+} from '@/features/users-dashboard/lib/dashboard-query-url'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
+import type {
+  DashboardPage,
+  DashboardQuery,
+  DashboardRoleFilter,
+  UsersSort,
+} from '@/features/users-dashboard/model/dashboard.types'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
+import { DashboardPagination } from '@/features/users-dashboard/ui/dashboard-pagination'
+import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
@@ -32,7 +50,8 @@ function DashboardHeader() {
           </h1>
 
           <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Browse a clean public user dataset with summary insights and responsive views.
+            Browse a clean public user dataset with summary insights and
+            responsive views.
           </p>
         </div>
 
@@ -122,25 +141,83 @@ function DashboardEmptyState({ onReload }: { onReload: () => void }) {
   )
 }
 
+function DashboardQueryEmptyState({ onReset }: { onReset: () => void }) {
+  return (
+    <EmptyState
+      title="No matching profiles"
+      description="No profiles match the current search or filters. Clear the filters to return to the full directory."
+      icon={<SearchX className="size-7" aria-hidden="true" />}
+      action={
+        <Button variant="secondary" onClick={onReset}>
+          <RefreshCcw className="size-4" aria-hidden="true" />
+          Reset filters
+        </Button>
+      }
+    />
+  )
+}
+
 function DashboardReadyState({
-  summary,
-  users,
+  allUsers,
+  dashboardPage,
+  dashboardQuery,
+  departmentOptions,
+  onDepartmentChange,
+  onPageChange,
   onReload,
+  onResetQuery,
+  onRoleChange,
+  onSearchChange,
+  onSortChange,
 }: {
-  summary: ReturnType<typeof buildDashboardSummary>
-  users: User[]
+  allUsers: User[]
+  dashboardPage: DashboardPage
+  dashboardQuery: DashboardQuery
+  departmentOptions: string[]
+  onDepartmentChange: (value: string) => void
+  onPageChange: (page: number) => void
   onReload: () => void
+  onResetQuery: () => void
+  onRoleChange: (value: DashboardRoleFilter) => void
+  onSearchChange: (value: string) => void
+  onSortChange: (value: UsersSort) => void
 }) {
+  const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
+
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
 
-      {users.length === 0 ? (
+      {dashboardPage.totalUsers > 0 && (
+        <DashboardToolbar
+          query={dashboardQuery}
+          departmentOptions={departmentOptions}
+          totalUsers={dashboardPage.totalUsers}
+          visibleUsers={dashboardPage.visibleUsers}
+          onSearchChange={onSearchChange}
+          onRoleChange={onRoleChange}
+          onDepartmentChange={onDepartmentChange}
+          onSortChange={onSortChange}
+          onReset={onResetQuery}
+        />
+      )}
+
+      {dashboardPage.totalUsers === 0 && (
         <DashboardEmptyState onReload={onReload} />
-      ) : (
+      )}
+
+      {dashboardPage.totalUsers > 0 && dashboardPage.visibleUsers === 0 && (
+        <DashboardQueryEmptyState onReset={onResetQuery} />
+      )}
+
+      {dashboardPage.visibleUsers > 0 && (
         <>
-          <UsersTable users={users} />
-          <UserCardList users={users} />
+          <UsersTable users={dashboardPage.users} />
+          <UserCardList users={dashboardPage.users} />
+          <DashboardPagination
+            dashboardPage={dashboardPage}
+            onPageChange={onPageChange}
+          />
         </>
       )}
     </div>
@@ -148,9 +225,39 @@ function DashboardReadyState({
 }
 
 export function UsersDashboard() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
 
-  const summary = useMemo(() => buildDashboardSummary(users, users), [users])
+  const dashboardQuery = useMemo(
+    () => parseDashboardQueryFromUrl(searchParams),
+    [searchParams],
+  )
+
+  const dashboardPage = useMemo(
+    () => applyDashboardQuery(users, dashboardQuery),
+    [users, dashboardQuery],
+  )
+
+  const departmentOptions = useMemo(
+    () => getDashboardDepartmentOptions(users),
+    [users],
+  )
+
+  const updateDashboardQuery = useCallback(
+    (queryPatch: Partial<DashboardQuery>) => {
+      const nextQuery = mergeDashboardQuery(dashboardQuery, queryPatch)
+      const nextUrl = buildDashboardQueryUrl(pathname, nextQuery)
+
+      router.replace(nextUrl, { scroll: false })
+    },
+    [dashboardQuery, pathname, router],
+  )
+
+  const resetDashboardQuery = useCallback(() => {
+    router.replace(pathname, { scroll: false })
+  }, [pathname, router])
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
@@ -168,8 +275,18 @@ export function UsersDashboard() {
 
         {!isLoading && !isError && (
           <DashboardReadyState
-            summary={summary}
-            users={users}
+            allUsers={users}
+            dashboardPage={dashboardPage}
+            dashboardQuery={dashboardQuery}
+            departmentOptions={departmentOptions}
+            onSearchChange={(search) => updateDashboardQuery({ search })}
+            onRoleChange={(role) => updateDashboardQuery({ role })}
+            onDepartmentChange={(department) =>
+              updateDashboardQuery({ department })
+            }
+            onPageChange={(page) => updateDashboardQuery({ page })}
+            onSortChange={(sort) => updateDashboardQuery({ sort })}
+            onResetQuery={resetDashboardQuery}
             onReload={reload}
           />
         )}
