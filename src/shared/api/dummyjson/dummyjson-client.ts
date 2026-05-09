@@ -22,11 +22,24 @@ function getDummyJsonBaseUrl() {
   )
 }
 
+function normalizeDummyJsonPath(path: string) {
+  return path.replace(/^[/]+/, '')
+}
+
+function getDummyJsonBaseUrlWithTrailingSlash() {
+  const baseUrl = getDummyJsonBaseUrl()
+
+  return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+}
+
 function buildDummyJsonUrl(
   path: string,
   searchParams: DummyJsonRequestOptions['searchParams'],
 ) {
-  const url = new URL(path, getDummyJsonBaseUrl())
+  const url = new URL(
+    normalizeDummyJsonPath(path),
+    getDummyJsonBaseUrlWithTrailingSlash(),
+  )
 
   Object.entries(searchParams ?? {}).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
