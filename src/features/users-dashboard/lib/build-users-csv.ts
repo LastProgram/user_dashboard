@@ -26,8 +26,23 @@ function formatOptionalCsvValue(value: string | number | null) {
   return String(value)
 }
 
+const FORMULA_LEADING_CHARACTERS = ['=', '+', '-', '@']
+
+function neutralizeFormulaValue(value: string) {
+  const firstVisibleCharacter = value.trimStart()[0]
+
+  if (
+    firstVisibleCharacter &&
+    FORMULA_LEADING_CHARACTERS.includes(firstVisibleCharacter)
+  ) {
+    return `'${value}`
+  }
+
+  return value
+}
+
 function escapeCsvValue(value: string | number | null) {
-  const csvValue = formatOptionalCsvValue(value)
+  const csvValue = neutralizeFormulaValue(formatOptionalCsvValue(value))
 
   if (
     csvValue.includes(',') ||
