@@ -1,13 +1,15 @@
 'use client'
 
-import { AlertTriangle, Database, RefreshCcw } from 'lucide-react'
+import { useMemo } from 'react'
+import { AlertTriangle, RefreshCcw } from 'lucide-react'
 
+import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
+import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { ErrorState } from '@/shared/ui/error-state'
 import { Skeleton } from '@/shared/ui/skeleton'
-
-import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 
 const SUMMARY_SKELETON_COUNT = 4
 const TABLE_SKELETON_ROWS = 6
@@ -100,33 +102,29 @@ function DashboardErrorState({
   )
 }
 
-function DashboardReadyState({ usersCount }: { usersCount: number }) {
+function DashboardReadyState({
+  summary,
+}: {
+  summary: ReturnType<typeof buildDashboardSummary>
+}) {
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
-            Dataset ready
-          </p>
-          <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-            {usersCount} normalized users loaded.
-          </h2>
-          <p className="max-w-2xl text-sm leading-6 text-slate-400">
-            Summary cards, desktop table, mobile cards, and empty state will be
-            connected in the next dashboard-core commits.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <DashboardSummary summary={summary} />
 
-        <div className="flex size-12 items-center justify-center rounded-2xl border border-cyan-400/30 bg-cyan-400/10 text-cyan-200">
-          <Database className="size-6" aria-hidden="true" />
-        </div>
-      </div>
-    </section>
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20">
+        <p className="text-sm leading-6 text-slate-400">
+          Desktop table, mobile cards, and empty state will be connected in the
+          next dashboard-core commits.
+        </p>
+      </section>
+    </div>
   )
 }
 
 export function UsersDashboard() {
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
+
+  const summary = useMemo(() => buildDashboardSummary(users, users), [users])
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
@@ -142,9 +140,7 @@ export function UsersDashboard() {
           />
         )}
 
-        {!isLoading && !isError && (
-          <DashboardReadyState usersCount={users.length} />
-        )}
+        {!isLoading && !isError && <DashboardReadyState summary={summary} />}
 
         {!isLoading && !isError && users.length === 0 && (
           <div className="flex justify-end">
