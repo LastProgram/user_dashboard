@@ -7,15 +7,13 @@ import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
 import {
   applyDashboardQuery,
-  getDashboardDepartmentOptions,
-} from '@/features/users-dashboard/lib/apply-dashboard-query'
-import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
-import { buildUsersCsv } from '@/features/users-dashboard/lib/build-users-csv'
-import {
   buildDashboardQueryUrl,
+  getDashboardDepartmentOptions,
   mergeDashboardQuery,
   parseDashboardQueryFromUrl,
-} from '@/features/users-dashboard/lib/dashboard-query-url'
+} from '@/features/users-dashboard/lib/dashboard-query'
+import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import { buildUsersCsv } from '@/features/users-dashboard/lib/build-users-csv'
 import { downloadUsersCsv } from '@/features/users-dashboard/lib/download-users-csv'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import type {
