@@ -1,7 +1,12 @@
 import type { User } from '@/entities/user/model/user.types'
-import type { DashboardQuery } from '@/features/users-dashboard/model/dashboard.types'
+import { DASHBOARD_PAGE_SIZE } from '@/features/users-dashboard/model/dashboard.constants'
+import type {
+  DashboardPage,
+  DashboardQuery,
+} from '@/features/users-dashboard/model/dashboard.types'
 
 const ALL_FILTER_VALUE = 'all'
+const FIRST_PAGE = 1
 
 function normalizeSearchValue(value: string) {
   return value.trim().toLowerCase()
@@ -56,6 +61,14 @@ function matchesDepartmentFilter(
   return department === ALL_FILTER_VALUE || user.department === department
 }
 
+function getTotalPages(totalItems: number, pageSize: number) {
+  return Math.max(FIRST_PAGE, Math.ceil(totalItems / pageSize))
+}
+
+function clampPage(page: number, totalPages: number) {
+  return Math.min(Math.max(page, FIRST_PAGE), totalPages)
+}
+
 export function getDashboardDepartmentOptions(users: User[]) {
   return Array.from(new Set(users.map((user) => user.department))).sort((a, b) =>
     a.localeCompare(b),
@@ -104,4 +117,41 @@ export function sortDashboardUsers(users: User[], sort: DashboardQuery['sort']) 
         compareUsersByCompany(rightUser, leftUser),
       )
   }
+}
+
+export function paginateDashboardUsers(
+  allUsers: User[],
+  filteredUsers: User[],
+  query: DashboardQuery,
+  pageSize = DASHBOARD_PAGE_SIZE,
+): DashboardPage {
+  const totalPages = getTotalPages(filteredUsers.length, pageSize)
+  const currentPage = clampPage(query.page, totalPages)
+  const startIndex = (currentPage - FIRST_PAGE) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, filteredUsers.length)
+  const pageUsers = filteredUsers.slice(startIndex, endIndex)
+
+  return {
+    users: pageUsers,
+    filteredUsers,
+    totalUsers: allUsers.length,
+    visibleUsers: filteredUsers.length,
+    page: currentPage,
+    pageSize,
+    totalPages,
+    startIndex,
+    endIndex,
+    hasPreviousPage: currentPage > FIRST_PAGE,
+    hasNextPage: currentPage < totalPages,
+  }
+}
+
+export function applyDashboardQuery(
+  users: User[],
+  query: DashboardQuery,
+): DashboardPage {
+  const filteredUsers = applyDashboardSearchAndFilters(users, query)
+  const sortedUsers = sortDashboardUsers(filteredUsers, query.sort)
+
+  return paginateDashboardUsers(users, sortedUsers, query)
 }
