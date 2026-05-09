@@ -23,6 +23,7 @@ import type {
   UsersSort,
 } from '@/features/users-dashboard/model/dashboard.types'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
+import { DashboardPagination } from '@/features/users-dashboard/ui/dashboard-pagination'
 import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
@@ -146,6 +147,7 @@ function DashboardReadyState({
   dashboardQuery,
   departmentOptions,
   onDepartmentChange,
+  onPageChange,
   onReload,
   onResetQuery,
   onRoleChange,
@@ -157,6 +159,7 @@ function DashboardReadyState({
   dashboardQuery: DashboardQuery
   departmentOptions: string[]
   onDepartmentChange: (value: string) => void
+  onPageChange: (page: number) => void
   onReload: () => void
   onResetQuery: () => void
   onRoleChange: (value: DashboardRoleFilter) => void
@@ -189,6 +192,10 @@ function DashboardReadyState({
         <>
           <UsersTable users={dashboardPage.users} />
           <UserCardList users={dashboardPage.users} />
+          <DashboardPagination
+            dashboardPage={dashboardPage}
+            onPageChange={onPageChange}
+          />
         </>
       )}
     </div>
@@ -255,6 +262,7 @@ export function UsersDashboard() {
             onDepartmentChange={(department) =>
               updateDashboardQuery({ department })
             }
+            onPageChange={(page) => updateDashboardQuery({ page })}
             onSortChange={(sort) => updateDashboardQuery({ sort })}
             onResetQuery={resetDashboardQuery}
             onReload={reload}
