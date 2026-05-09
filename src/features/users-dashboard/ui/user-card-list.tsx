@@ -88,13 +88,13 @@ export function UserCardList({ users }: UserCardListProps) {
     >
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
-          Directory
+          Profiles
         </p>
         <h2
           id="users-card-list-title"
           className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white"
         >
-          User cards
+          People directory
         </h2>
       </div>
 

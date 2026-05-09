@@ -78,18 +78,18 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
-            Overview
+            At a glance
           </p>
           <h2
             id="dashboard-summary-title"
             className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white"
           >
-            Dataset summary
+            People overview
           </h2>
         </div>
 
         <p className="max-w-xl text-sm leading-6 text-slate-400">
-          Overview of the currently displayed users.
+          At a glance of the currently displayed users.
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
         <SummaryMetricCard
           title="Total users"
           value={summary.totalUsers}
-          description="Loaded from the public DummyJSON dataset."
+          description="All profiles currently available in the dashboard."
           icon={<Users className="size-6" />}
           highlighted
         />
@@ -105,21 +105,21 @@ export function DashboardSummary({ summary }: DashboardSummaryProps) {
         <SummaryMetricCard
           title="Visible users"
           value={summary.visibleUsers}
-          description="Currently visible in the dashboard view."
+          description="Profiles shown in the current view."
           icon={<Eye className="size-6" />}
         />
 
         <SummaryMetricCard
           title="Average age"
           value={`${summary.averageAge} years`}
-          description="Rounded average across visible users."
+          description="Average age across the current profiles."
           icon={<Gauge className="size-6" />}
         />
 
         <SummaryMetricCard
           title="Role distribution"
           value={summary.totalUsers}
-          description="Safe role counts from normalized users."
+          description="Breakdown by profile role."
           icon={<ShieldCheck className="size-6" />}
         >
           <div className="space-y-2">

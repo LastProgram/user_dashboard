@@ -56,17 +56,17 @@ export function UsersTable({ users }: UsersTableProps) {
       <div className="flex flex-col gap-2 border-b border-slate-800 px-6 py-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-300">
-            Directory
+            Profiles
           </p>
           <h2
             id="users-table-title"
             className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white"
           >
-            Users table
+            People directory
           </h2>
         </div>
 
-        <p className="text-sm text-slate-400">{users.length} records</p>
+        <p className="text-sm text-slate-400">{users.length} profiles</p>
       </div>
 
       <div className="overflow-x-auto">

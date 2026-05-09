@@ -97,10 +97,10 @@ function DashboardErrorState({
       title="Unable to load users"
       description={
         message ??
-        'The dashboard could not load the normalized users dataset. Retry the request to fetch fresh data.'
+        'The dashboard could not load user profiles. Try again to refresh the data.'
       }
       icon={<AlertTriangle className="size-7" aria-hidden="true" />}
-      retryLabel="Retry loading users"
+      retryLabel="Try again"
       onRetry={onRetry}
     />
   )
@@ -110,12 +110,12 @@ function DashboardEmptyState({ onReload }: { onReload: () => void }) {
   return (
     <EmptyState
       title="No users available"
-      description="The request completed successfully, but the normalized dataset did not include any users. Reload the dataset to try again."
+      description="No user profiles are available right now. Try reloading the data."
       icon={<SearchX className="size-7" aria-hidden="true" />}
       action={
         <Button variant="secondary" onClick={onReload}>
           <RefreshCcw className="size-4" aria-hidden="true" />
-          Reload users
+          Reload profiles
         </Button>
       }
     />
