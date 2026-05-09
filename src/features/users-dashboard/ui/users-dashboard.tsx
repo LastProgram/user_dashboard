@@ -2,10 +2,14 @@
 
 import type { User } from '@/entities/user/model/user.types'
 import { useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
+import { applyDashboardQuery } from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
+import { parseDashboardQueryFromUrl } from '@/features/users-dashboard/lib/dashboard-query-url'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
+import type { DashboardPage } from '@/features/users-dashboard/model/dashboard.types'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
@@ -32,7 +36,8 @@ function DashboardHeader() {
           </h1>
 
           <p className="max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Browse a clean public user dataset with summary insights and responsive views.
+            Browse a clean public user dataset with summary insights and
+            responsive views.
           </p>
         </div>
 
@@ -123,24 +128,26 @@ function DashboardEmptyState({ onReload }: { onReload: () => void }) {
 }
 
 function DashboardReadyState({
-  summary,
-  users,
+  allUsers,
+  dashboardPage,
   onReload,
 }: {
-  summary: ReturnType<typeof buildDashboardSummary>
-  users: User[]
+  allUsers: User[]
+  dashboardPage: DashboardPage
   onReload: () => void
 }) {
+  const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
+
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
 
-      {users.length === 0 ? (
+      {dashboardPage.totalUsers === 0 ? (
         <DashboardEmptyState onReload={onReload} />
       ) : (
         <>
-          <UsersTable users={users} />
-          <UserCardList users={users} />
+          <UsersTable users={dashboardPage.users} />
+          <UserCardList users={dashboardPage.users} />
         </>
       )}
     </div>
@@ -148,9 +155,18 @@ function DashboardReadyState({
 }
 
 export function UsersDashboard() {
+  const searchParams = useSearchParams()
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
 
-  const summary = useMemo(() => buildDashboardSummary(users, users), [users])
+  const dashboardQuery = useMemo(
+    () => parseDashboardQueryFromUrl(searchParams),
+    [searchParams],
+  )
+
+  const dashboardPage = useMemo(
+    () => applyDashboardQuery(users, dashboardQuery),
+    [users, dashboardQuery],
+  )
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
@@ -168,8 +184,8 @@ export function UsersDashboard() {
 
         {!isLoading && !isError && (
           <DashboardReadyState
-            summary={summary}
-            users={users}
+            allUsers={users}
+            dashboardPage={dashboardPage}
             onReload={reload}
           />
         )}
