@@ -1,8 +1,3 @@
-import type {
-  RawDummyJsonUser,
-  RawDummyJsonUsersResponse,
-} from '@/entities/user/model/user.schema'
-
 import { fetchDummyJson } from './dummyjson-client'
 
 export const USERS_SELECT_FIELDS = [
@@ -23,7 +18,7 @@ export const USERS_SELECT_FIELDS = [
 const USERS_SELECT_PARAM = USERS_SELECT_FIELDS.join(',')
 
 export function fetchDummyJsonUsers(signal?: AbortSignal) {
-  return fetchDummyJson<RawDummyJsonUsersResponse>('/users', {
+  return fetchDummyJson<unknown>('/users', {
     signal,
     searchParams: {
       limit: 0,
@@ -33,7 +28,7 @@ export function fetchDummyJsonUsers(signal?: AbortSignal) {
 }
 
 export function fetchDummyJsonUserById(id: number, signal?: AbortSignal) {
-  return fetchDummyJson<RawDummyJsonUser>(`/users/${id}`, {
+  return fetchDummyJson<unknown>(`/users/${id}`, {
     signal,
     searchParams: {
       select: USERS_SELECT_PARAM,
