@@ -1,8 +1,8 @@
 'use client'
 
 import type { User } from '@/entities/user/model/user.types'
-import { useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useCallback, useMemo } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, RefreshCcw, SearchX } from 'lucide-react'
 
 import {
@@ -10,9 +10,18 @@ import {
   getDashboardDepartmentOptions,
 } from '@/features/users-dashboard/lib/apply-dashboard-query'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
-import { parseDashboardQueryFromUrl } from '@/features/users-dashboard/lib/dashboard-query-url'
+import {
+  buildDashboardQueryUrl,
+  mergeDashboardQuery,
+  parseDashboardQueryFromUrl,
+} from '@/features/users-dashboard/lib/dashboard-query-url'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
-import type { DashboardPage } from '@/features/users-dashboard/model/dashboard.types'
+import type {
+  DashboardPage,
+  DashboardQuery,
+  DashboardRoleFilter,
+  UsersSort,
+} from '@/features/users-dashboard/model/dashboard.types'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
 import { DashboardToolbar } from '@/features/users-dashboard/ui/dashboard-toolbar'
 import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
@@ -136,13 +145,23 @@ function DashboardReadyState({
   dashboardPage,
   dashboardQuery,
   departmentOptions,
+  onDepartmentChange,
   onReload,
+  onResetQuery,
+  onRoleChange,
+  onSearchChange,
+  onSortChange,
 }: {
   allUsers: User[]
   dashboardPage: DashboardPage
-  dashboardQuery: ReturnType<typeof parseDashboardQueryFromUrl>
+  dashboardQuery: DashboardQuery
   departmentOptions: string[]
+  onDepartmentChange: (value: string) => void
   onReload: () => void
+  onResetQuery: () => void
+  onRoleChange: (value: DashboardRoleFilter) => void
+  onSearchChange: (value: string) => void
+  onSortChange: (value: UsersSort) => void
 }) {
   const summary = buildDashboardSummary(allUsers, dashboardPage.filteredUsers)
 
@@ -156,7 +175,11 @@ function DashboardReadyState({
           departmentOptions={departmentOptions}
           totalUsers={dashboardPage.totalUsers}
           visibleUsers={dashboardPage.visibleUsers}
-          disabled
+          onSearchChange={onSearchChange}
+          onRoleChange={onRoleChange}
+          onDepartmentChange={onDepartmentChange}
+          onSortChange={onSortChange}
+          onReset={onResetQuery}
         />
       )}
 
@@ -173,6 +196,8 @@ function DashboardReadyState({
 }
 
 export function UsersDashboard() {
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { users, isLoading, isError, error, reload } = useUsersDashboard()
 
@@ -190,6 +215,20 @@ export function UsersDashboard() {
     () => getDashboardDepartmentOptions(users),
     [users],
   )
+
+  const updateDashboardQuery = useCallback(
+    (queryPatch: Partial<DashboardQuery>) => {
+      const nextQuery = mergeDashboardQuery(dashboardQuery, queryPatch)
+      const nextUrl = buildDashboardQueryUrl(pathname, nextQuery)
+
+      router.replace(nextUrl, { scroll: false })
+    },
+    [dashboardQuery, pathname, router],
+  )
+
+  const resetDashboardQuery = useCallback(() => {
+    router.replace(pathname, { scroll: false })
+  }, [pathname, router])
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50 sm:px-8 lg:px-10">
@@ -211,6 +250,13 @@ export function UsersDashboard() {
             dashboardPage={dashboardPage}
             dashboardQuery={dashboardQuery}
             departmentOptions={departmentOptions}
+            onSearchChange={(search) => updateDashboardQuery({ search })}
+            onRoleChange={(role) => updateDashboardQuery({ role })}
+            onDepartmentChange={(department) =>
+              updateDashboardQuery({ department })
+            }
+            onSortChange={(sort) => updateDashboardQuery({ sort })}
+            onResetQuery={resetDashboardQuery}
             onReload={reload}
           />
         )}
