@@ -3,9 +3,11 @@
 import { useMemo } from 'react'
 import { AlertTriangle, RefreshCcw } from 'lucide-react'
 
+import type { User } from '@/entities/user/model/user.types'
 import { buildDashboardSummary } from '@/features/users-dashboard/lib/build-dashboard-summary'
 import { useUsersDashboard } from '@/features/users-dashboard/api/use-users-dashboard'
 import { DashboardSummary } from '@/features/users-dashboard/ui/dashboard-summary'
+import { UserCardList } from '@/features/users-dashboard/ui/user-card-list'
 import { UsersTable } from '@/features/users-dashboard/ui/users-table'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -108,18 +110,13 @@ function DashboardReadyState({
   users,
 }: {
   summary: ReturnType<typeof buildDashboardSummary>
-  users: ReturnType<typeof useUsersDashboard>['users']
+  users: User[]
 }) {
   return (
     <div className="space-y-6">
       <DashboardSummary summary={summary} />
       <UsersTable users={users} />
-
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/20 md:hidden">
-        <p className="text-sm leading-6 text-slate-400">
-          Mobile user cards will be connected in the next dashboard-core commit.
-        </p>
-      </section>
+      <UserCardList users={users} />
     </div>
   )
 }
