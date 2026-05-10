@@ -79,6 +79,12 @@ For local Playwright runs, install the browser:
 npx playwright install chromium
 ```
 
+### Screenshots
+
+![Dashboard overview](docs/media/dashboard-overview.png)
+
+![User details drawer](docs/media/dashboard-details.png)
+
 ### Note
 
 Deployment is not required for this test assignment. The project can be reviewed and run locally.
@@ -160,6 +166,12 @@ npm run test:e2e
 ```bash
 npx playwright install chromium
 ```
+
+### Скриншоты
+
+![Общий вид дашборда](docs/media/dashboard-overview.png)
+
+![Drawer с деталями пользователя](docs/media/dashboard-details.png)
 
 ### Примечание
 
