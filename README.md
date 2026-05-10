@@ -35,6 +35,8 @@ Search, filters, sorting, and pagination are stored in the URL query string. Thi
 
 CSV generation and file download are separated: CSV formatting is pure and tested, while browser-only download logic is isolated.
 
+An architecture note is available in [ADR 001](docs/adr/001-user-dashboard-architecture.md).
+
 ### Tech stack
 
 - Next.js App Router
@@ -114,6 +116,8 @@ Users Dashboard — тестовое задание с интерактивны�
 Состояние поиска, фильтров, сортировки и пагинации хранится в URL query string. Так текущий вид дашборда можно воспроизвести по ссылке без лишнего глобального хранилища состояния.
 
 CSV-генерация и скачивание файла разделены: формирование CSV — чистый протестированный helper, а browser-only логика скачивания изолирована отдельно.
+
+Архитектурное решение описано в [ADR 001](docs/adr/001-user-dashboard-architecture.md).
 
 ### Стек
 
